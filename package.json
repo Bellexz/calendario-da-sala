@@ -1,13 +1,17 @@
 {
   "name": "calendario",
   "version": "1.0.0",
-  "description": "",
-  "main": "db.js",
+  "description": "Calendário da sala com painel administrativo",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
   },
-  "keywords": [],
+  "keywords": [
+    "calendario",
+    "node",
+    "sqlite",
+    "express"
+  ],
   "author": "",
   "license": "ISC",
   "type": "commonjs",

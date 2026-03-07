@@ -1,19 +1,32 @@
 const express = require("express")
 const session = require("express-session")
 const path = require("path")
+const bcrypt = require("bcrypt")
 const db = require("./database/db.js")
 
 const app = express()
 
+// Configurações básicas
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
 
 app.use(session({
     secret: "arara-azul-super-secreta",
     resave: false,
-    saveUninitialized: true
+    saveUninitialized: false
 }))
 
+app.use(express.static(path.join(__dirname, "public")))
+
+// Middleware de verificação de login
+function checkLogin(req, res, next) {
+    if (!req.session.usuario) {
+        return res.redirect("/login.html")
+    }
+    next()
+}
+
+// LOGIN
 app.post("/login", (req, res) => {
 
     const { usuario, senha } = req.body
@@ -21,67 +34,57 @@ app.post("/login", (req, res) => {
     db.get(
         "SELECT * FROM users WHERE username = ?",
         [usuario],
-        async (err, row) => {
+        async (err, user) => {
 
-            if (!row) {
+            if (err) {
+                console.error(err)
+                return res.send("Erro no servidor")
+            }
+
+            if (!user) {
                 return res.send("Usuário inválido")
             }
 
-            const bcrypt = require("bcrypt")
-            const senhaValida = await bcrypt.compare(senha, row.password)
+            const senhaValida = await bcrypt.compare(senha, user.password)
 
-            if (senhaValida) {
-                req.session.usuario = row.username
-                res.redirect("/admin.html")
-            } else {
-                res.send("Senha incorreta")
+            if (!senhaValida) {
+                return res.send("Senha incorreta")
             }
+
+            req.session.usuario = user.username
+            res.redirect("/admin")
         }
     )
 })
-app.get("/eventos", (req,res)=>{
 
-db.all("SELECT * FROM eventos", (err,rows)=>{
-
-if(err){
-return res.status(500).json({erro:"erro"})
-}
-
-res.json(rows)
-
+// LOGOUT
+app.get("/logout", (req, res) => {
+    req.session.destroy(() => {
+        res.redirect("/")
+    })
 })
 
+// PAINEL ADMIN
+app.get("/admin", checkLogin, (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "admin.html"))
 })
-app.use(express.static("public"))
 
-app.get("/admin", (req,res)=>{
-res.sendFile(__dirname + "/public/admin.html")
-})
-app.post("/delete-event", (req, res) => {
+// LISTAR EVENTOS (API)
+app.get("/eventos", (req, res) => {
 
-    if (!req.session.usuario) {
-        return res.send("Acesso negado")
-    }
+    db.all("SELECT * FROM eventos", (err, rows) => {
 
-    const { id } = req.body
-
-    db.run(
-        "DELETE FROM eventos WHERE id = ?",
-        [id],
-        (err) => {
-            if (err) {
-                return res.send("Erro ao deletar")
-            }
-
-            res.redirect("/admin.html")
+        if (err) {
+            console.error(err)
+            return res.status(500).json({ erro: "Erro ao buscar eventos" })
         }
-    )
-})
-app.post("/adicionar", (req, res) => {
 
-    if (!req.session.usuario) {
-        return res.send("Acesso negado")
-    }
+        res.json(rows)
+    })
+})
+
+// ADICIONAR EVENTO
+app.post("/adicionar", checkLogin, (req, res) => {
 
     const { titulo, data } = req.body
 
@@ -91,15 +94,38 @@ app.post("/adicionar", (req, res) => {
         (err) => {
 
             if (err) {
+                console.error(err)
                 return res.send("Erro ao adicionar evento")
             }
 
-            res.redirect("/admin.html")
+            res.redirect("/admin")
         }
     )
-
 })
+
+// DELETAR EVENTO
+app.post("/delete-event", checkLogin, (req, res) => {
+
+    const { id } = req.body
+
+    db.run(
+        "DELETE FROM eventos WHERE id = ?",
+        [id],
+        (err) => {
+
+            if (err) {
+                console.error(err)
+                return res.send("Erro ao deletar evento")
+            }
+
+            res.redirect("/admin")
+        }
+    )
+})
+
+// SERVIDOR
 const PORT = process.env.PORT || 3000
+
 app.listen(PORT, () => {
-    console.log("Servidor rodando")
+    console.log("Servidor rodando na porta " + PORT)
 })

@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
 
 <head>
 <meta charset="UTF-8">
+<title>Painel Administrativo</title>
 <link rel="stylesheet" href="style.css">
 </head>
 
@@ -12,18 +13,19 @@
 
 <form action="/adicionar" method="POST">
 
-<input name="titulo" placeholder="Evento">
+<input name="titulo" placeholder="Evento" required>
 
-<input type="date" name="data">
+<input type="date" name="data" required>
 
-<button>Adicionar</button>
+<button type="submit">Adicionar</button>
 
 </form>
+
+<h3>Eventos cadastrados</h3>
 
 <div id="lista-eventos"></div>
 
 <script src="admin.js"></script>
 
 </body>
-
 </html>
