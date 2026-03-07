@@ -1,0 +1,50 @@
+body{
+
+background:#0b3d91;
+color:white;
+font-family:Arial;
+text-align:center;
+
+}
+
+h1{
+color:#ffd500;
+}
+
+input,button{
+
+padding:10px;
+margin:5px;
+
+}
+
+button{
+
+background:#ffd500;
+border:none;
+cursor:pointer;
+
+}
+
+footer{
+
+margin-top:50px;
+
+}
+
+a{
+color:#ffd500;
+}
+.evento {
+    background: #ffd84d;
+    color: #003366;
+    padding: 6px;
+    border-radius: 6px;
+    font-size: 11px;
+    margin-top: 4px;
+
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+    max-width: 100%;
+}
