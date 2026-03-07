@@ -1,7 +1,7 @@
 const express = require("express")
 const session = require("express-session")
 const path = require("path")
-const db = require("./database/db")
+const db = require("./database/db.js")
 
 const app = express()
 
