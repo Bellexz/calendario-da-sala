@@ -15,6 +15,10 @@ color:white;
 text-align:center;
 }
 
+.fc-toolbar-title {
+    text-transform: capitalize;
+}
+
 h1{
 color:#ffee04;
 }
@@ -53,9 +57,30 @@ font-weight:bold;
 
 <div id="calendar"></div>
 
+<div id="detalhes-evento" style="
+margin: 20px auto;
+padding: 15px;
+max-width: 600px;
+background: white;
+color: black;
+border-radius: 10px;
+display: none;
+"></div>
+
 <a href="/admin">Área administrativa</a>
 
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+
+<script>
+function transformarLinks(texto) {
+    if (!texto) return ""
+
+    return texto.replace(
+        /(https?:\/\/[^\s]+)/g,
+        '<a href="$1" target="_blank">$1</a>'
+    )
+}
+</script>
 
 <script>
 
@@ -68,9 +93,12 @@ fetch('/eventos')
 .then(eventos => {
 
 const eventosFormatados = eventos.map(e => ({
-title: e.titulo,
-start: e.data
-}));
+    title: e.titulo,
+    start: e.data,
+    extendedProps: {
+        descricao: e.descricao
+    }
+}))
 
 var calendar = new FullCalendar.Calendar(calendarEl, {
 
@@ -80,27 +108,31 @@ locale: 'pt-br',
 
 events: eventosFormatados,
 
-titleFormat: function(date) {
+titleFormat: { year: 'numeric', month: 'long' },
 
-let mes = date.date.month;
-let ano = date.date.year;
+eventClick: function(info) {
 
-const meses = [
-"Janeiro","Fevereiro","Março","Abril","Maio","Junho",
-"Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"
-];
+    const titulo = info.event.title
+    const descricao = info.event.extendedProps.descricao || "Sem descrição"
 
-return meses[mes] + " " + ano;
+    const div = document.getElementById("detalhes-evento")
 
+    div.style.display = "block"
+
+    div.innerHTML = `
+        <h3>${titulo}</h3>
+        <p>${transformarLinks(descricao)}</p>
+    `
 }
 
-});
+    });
 
 calendar.render();
 
 });
 
 });
+
 
 </script>
 

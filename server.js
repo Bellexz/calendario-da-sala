@@ -86,11 +86,11 @@ app.get("/eventos", (req, res) => {
 // ADICIONAR EVENTO
 app.post("/adicionar", checkLogin, (req, res) => {
 
-    const { titulo, data } = req.body
+    const { titulo, data, descricao } = req.body
 
     db.run(
-        "INSERT INTO eventos (titulo, data) VALUES (?, ?)",
-        [titulo, data],
+        "INSERT INTO eventos (titulo, data, descricao) VALUES (?, ?, ?)",
+        [titulo, data, descricao],
         (err) => {
 
             if (err) {

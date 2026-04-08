@@ -38,13 +38,8 @@ color:#ffd500;
 .evento {
     background: #ffd84d;
     color: #003366;
-    padding: 6px;
-    border-radius: 6px;
-    font-size: 11px;
-    margin-top: 4px;
-
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    white-space: normal;
-    max-width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    margin: 10px auto;
+    width: 60%;
 }

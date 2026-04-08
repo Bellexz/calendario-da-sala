@@ -1,42 +1,53 @@
+
+function transformarLinks(texto) {
+    if (!texto) return ""
+
+    return texto.replace(
+        /(https?:\/\/[^\s]+)/g,
+        '<a href="$1" target="_blank">$1</a>'
+    )
+}
 async function carregarEventos() {
 
-const resposta = await fetch("/eventos")
-const eventos = await resposta.json()
+    const resposta = await fetch("/eventos")
+    const eventos = await resposta.json()
 
-const div = document.getElementById("lista-eventos")
-div.innerHTML = ""
+    const div = document.getElementById("lista-eventos")
+    div.innerHTML = ""
 
-eventos.forEach(evento => {
+    eventos.forEach(evento => {
 
-const container = document.createElement("div")
-container.className = "evento"
+        const container = document.createElement("div")
+        container.className = "evento"
 
-const texto = document.createElement("span")
-texto.textContent = `${evento.titulo} - ${evento.data}`
+        const texto = document.createElement("span")
 
-const form = document.createElement("form")
-form.action = "/delete-event"
-form.method = "POST"
+        texto.innerHTML = `
+        <strong>${evento.titulo}</strong> - ${evento.data}<br>
+        ${transformarLinks(evento.descricao)}
+        `
 
-const input = document.createElement("input")
-input.type = "hidden"
-input.name = "id"
-input.value = evento.id
+        const form = document.createElement("form")
+        form.action = "/delete-event"
+        form.method = "POST"
 
-const botao = document.createElement("button")
-botao.type = "submit"
-botao.textContent = "Excluir"
+        const input = document.createElement("input")
+        input.type = "hidden"
+        input.name = "id"
+        input.value = evento.id
 
-form.appendChild(input)
-form.appendChild(botao)
+        const botao = document.createElement("button")
+        botao.type = "submit"
+        botao.textContent = "Excluir"
 
-container.appendChild(texto)
-container.appendChild(form)
+        form.appendChild(input)
+        form.appendChild(botao)
 
-div.appendChild(container)
+        container.appendChild(texto)
+        container.appendChild(form)
 
-})
-
+        div.appendChild(container)
+    })
 }
 
 carregarEventos()
