@@ -2,7 +2,7 @@ const express = require("express")
 const session = require("express-session")
 const path = require("path")
 const bcrypt = require("bcrypt")
-const db = require("./database/db.js")
+const supabase = require("./supabase")
 
 const app = express()
 
@@ -70,57 +70,53 @@ app.get("/admin", checkLogin, (req, res) => {
 })
 
 // LISTAR EVENTOS (API)
-app.get("/eventos", (req, res) => {
+app.get("/eventos", async (req, res) => {
 
-    db.all("SELECT * FROM eventos", (err, rows) => {
+    const { data, error } = await supabase
+     .from("eventos")
+     .select("*")
 
-        if (err) {
-            console.error(err)
-            return res.status(500).json({ erro: "Erro ao buscar eventos" })
-        }
+    if (error) {
+        console.error(error)
+        return res.status(500).json({ erro: "Erro ao buscar eventos"})
+    }
 
-        res.json(rows)
-    })
+    res.json(data)
 })
 
 // ADICIONAR EVENTO
-app.post("/adicionar", checkLogin, (req, res) => {
+app.post("/adicionar", checkLogin, async (req, res) => {
 
     const { titulo, data, descricao } = req.body
 
-    db.run(
-        "INSERT INTO eventos (titulo, data, descricao) VALUES (?, ?, ?)",
-        [titulo, data, descricao],
-        (err) => {
+    const {error} = await supabase
+     .from("eventos")
+     .insert([{ titulo, data, descricao }])
 
-            if (err) {
-                console.error(err)
-                return res.send("Erro ao adicionar evento")
-            }
+    if (error) {
+        console.error(error)
+        return res.send("Erro ao adicionar evento")
+    }
 
-            res.redirect("/admin")
-        }
-    )
+    res.redirect("/admin")
 })
 
 // DELETAR EVENTO
-app.post("/delete-event", checkLogin, (req, res) => {
+app.post("/delete-event", checkLogin, async (req, res) => {
 
     const { id } = req.body
 
-    db.run(
-        "DELETE FROM eventos WHERE id = ?",
-        [id],
-        (err) => {
+    const { error } = await supabase
+     .from("eventos")
+     .delete()
+     .eq("id", id)
 
-            if (err) {
-                console.error(err)
-                return res.send("Erro ao deletar evento")
-            }
+    if (error) {
+        console.error(error)
+        return res.send("Erro ao deletar evento")
+    }
 
-            res.redirect("/admin")
-        }
-    )
+    res.redirect("/admin")
 })
 
 // SERVIDOR
