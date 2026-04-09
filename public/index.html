@@ -7,47 +7,55 @@
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
 
 <style>
+body {
+    font-family: Arial, sans-serif;
+    background: #0d47a1;
+    color: white;
+    text-align: center;
+}
 
-body{
-font-family: Arial, sans-serif;
-background:#0d47a1;
-color:white;
-text-align:center;
+h1 {
+    color: #ffee04;
 }
 
 .fc-toolbar-title {
     text-transform: capitalize;
 }
 
-h1{
-color:#ffee04;
+#calendar {
+    max-width: 900px;
+    margin: 40px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    color: black;
 }
 
-#calendar{
-max-width:900px;
-margin:40px auto;
-background:white;
-padding:20px;
-border-radius:10px;
-color:black;
-}
-.fc-event-title {
-white-space: normal !important;
+#detalhes-evento {
+    margin: 20px auto;
+    padding: 15px;
+    max-width: 600px;
+    background: white;
+    color: black;
+    border-radius: 10px;
+    display: none;
 }
 
-.fc-daygrid-event {
-white-space: normal !important;
+#tabela-lateral {
+    position: fixed;
+    right: 20px;
+    top: 100px;
+    background: white;
+    color: black;
+    padding: 10px;
+    border-radius: 10px;
+    width: 220px;
 }
 
-.fc-event {
-font-size: 12px;
+a {
+    color: #000;
+    font-weight: bold;
 }
-
-a{
-color:#000000;
-font-weight:bold;
-}
-
 </style>
 </head>
 
@@ -57,21 +65,19 @@ font-weight:bold;
 
 <div id="calendar"></div>
 
-<div id="detalhes-evento" style="
-margin: 20px auto;
-padding: 15px;
-max-width: 600px;
-background: white;
-color: black;
-border-radius: 10px;
-display: none;
-"></div>
+<div id="detalhes-evento"></div>
+
+<div id="tabela-lateral">
+    <h4>Atendimento</h4>
+    <div id="tabela-professores"></div>
+</div>
 
 <a href="/admin">Área administrativa</a>
 
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 
 <script>
+// transforma links em clicáveis
 function transformarLinks(texto) {
     if (!texto) return ""
 
@@ -80,73 +86,65 @@ function transformarLinks(texto) {
         '<a href="$1" target="_blank">$1</a>'
     )
 }
-</script>
 
-<script>
+// evita quebrar se backend falhar
+async function buscarEventos() {
+    try {
+        const res = await fetch("/eventos")
 
-document.addEventListener('DOMContentLoaded', function() {
+        const texto = await res.text()
 
-var calendarEl = document.getElementById('calendar');
+        try {
+            return JSON.parse(texto)
+        } catch {
+            console.error("Backend retornou algo inválido:", texto)
+            return []
+        }
 
-fetch('/eventos')
-.then(res => res.json())
-.then(eventos => {
-
-const eventosFormatados = eventos.map(e => ({
-    title: e.titulo,
-    start: e.data,
-    extendedProps: {
-        descricao: e.descricao
+    } catch (err) {
+        console.error("Erro ao buscar eventos:", err)
+        return []
     }
-}))
-
-var calendar = new FullCalendar.Calendar(calendarEl, {
-
-initialView: 'dayGridMonth',
-
-locale: 'pt-br',
-
-events: eventosFormatados,
-
-titleFormat: { year: 'numeric', month: 'long' },
-
-eventClick: function(info) {
-
-    const titulo = info.event.title
-    const descricao = info.event.extendedProps.descricao || "Sem descrição"
-
-    const div = document.getElementById("detalhes-evento")
-
-    div.style.display = "block"
-
-    div.innerHTML = `
-        <h3>${titulo}</h3>
-        <p>${transformarLinks(descricao)}</p>
-    `
 }
 
-    });
+document.addEventListener('DOMContentLoaded', async function() {
 
-calendar.render();
+    const calendarEl = document.getElementById('calendar')
 
-});
+    const eventos = await buscarEventos()
 
-});
+    const eventosFormatados = eventos.map(e => ({
+        title: e.titulo,
+        start: e.data,
+        extendedProps: {
+            descricao: e.descricao
+        }
+    }))
 
-<div style="
-position: fixed;
-right: 20px;
-top: 100px;
-background: white;
-color: black;
-padding: 10px;
-border-radius: 10px;
-width: 200px;
-">
-    <h4>Atendimento</h4>
-    <div id="tabela-professores"></div>
-</div>
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'pt-br',
+        events: eventosFormatados,
+        titleFormat: { year: 'numeric', month: 'long' },
 
+        eventClick: function(info) {
+
+            const titulo = info.event.title
+            const descricao = info.event.extendedProps.descricao || "Sem descrição"
+
+            const div = document.getElementById("detalhes-evento")
+
+            div.style.display = "block"
+
+            div.innerHTML = `
+                <h3>${titulo}</h3>
+                <p>${transformarLinks(descricao)}</p>
+            `
+        }
+    })
+
+    calendar.render()
+})
 </script>
 
 </body>
