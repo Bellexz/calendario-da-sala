@@ -80,16 +80,20 @@ carregarEventos()
 
 let professores = []
 
-document.getElementById("form-professor").addEventListener("submit", (e) => {
-    e.preventDefault()
+const formProfessor = document.getElementById("form-professor")
 
-    const nome = document.getElementById("nome").value
-    const horario = document.getElementById("horario").value
+if (formProfessor) {
+    formProfessor.addEventListener("submit", (e) => {
+        e.preventDefault()
 
-    professores.push({ nome, horario })
+        const nome = document.getElementById("nome").value
+        const horario = document.getElementById("horario").value
 
-    renderTabela()
-})
+        professores.push({ nome, horario })
+
+        renderTabela()
+    })
+}
 
 function renderTabela() {
     const div = document.getElementById("tabela-professores")
@@ -109,4 +113,7 @@ function renderTabela() {
     html += "</tr></table>"
 
     div.innerHTML = html
+}
+window.onload = () => {
+    carregarEventos()
 }
