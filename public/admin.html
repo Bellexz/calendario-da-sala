@@ -12,20 +12,26 @@
 <h2>Painel Administrativo</h2>
 
 <form action="/adicionar" method="POST">
-
-<input name="titulo" placeholder="Evento" required>
-
-<input type="date" name="data" required>
-
-<textarea name="descricao" placeholder="Descrição do evento"></textarea>
-
-<button type="submit">Adicionar</button>
-
+    <input name="titulo" placeholder="Evento" required>
+    <input type="date" name="data" required>
+    <textarea name="descricao" placeholder="Descrição do evento"></textarea>
+    <button type="submit">Adicionar</button>
 </form>
 
 <h3>Eventos cadastrados</h3>
-
 <div id="lista-eventos"></div>
+
+<hr>
+
+<h3>Horários dos Professores</h3>
+
+<form id="form-professor">
+    <input id="nome" placeholder="Professor" required>
+    <input id="horario" placeholder="Horário" required>
+    <button type="submit">Adicionar</button>
+</form>
+
+<div id="tabela-professores"></div>
 
 <script src="admin.js"></script>
 

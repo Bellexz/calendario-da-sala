@@ -27,34 +27,28 @@ function checkLogin(req, res, next) {
 }
 
 // LOGIN
-app.post("/login", (req, res) => {
+app.post("/login", async (req, res) => {
 
     const { usuario, senha } = req.body
 
-    db.get(
-        "SELECT * FROM users WHERE username = ?",
-        [usuario],
-        async (err, user) => {
+    const { data, error } = await supabase
+        .from("users")
+        .select("*")
+        .eq("username", usuario)
+        .single()
 
-            if (err) {
-                console.error(err)
-                return res.send("Erro no servidor")
-            }
+    if (error || !data) {
+        return res.send("Usuário inválido")
+    }
 
-            if (!user) {
-                return res.send("Usuário inválido")
-            }
+    const senhaValida = await bcrypt.compare(senha, data.password)
 
-            const senhaValida = await bcrypt.compare(senha, user.password)
+    if (!senhaValida) {
+        return res.send("Senha incorreta")
+    }
 
-            if (!senhaValida) {
-                return res.send("Senha incorreta")
-            }
-
-            req.session.usuario = user.username
-            res.redirect("/admin")
-        }
-    )
+    req.session.usuario = data.username
+    res.redirect("/admin")
 })
 
 // LOGOUT
@@ -114,6 +108,24 @@ app.post("/delete-event", checkLogin, async (req, res) => {
     if (error) {
         console.error(error)
         return res.send("Erro ao deletar evento")
+    }
+
+    res.redirect("/admin")
+})
+
+//EDITAR EVENTO
+app.post("/editar", checkLogin, async (req, res) => {
+
+    const { id, titulo, data, descricao } = req.body
+
+    const { error } = await supabase
+        .from("eventos")
+        .update({ titulo, data, descricao })
+        .eq("id", id)
+
+    if (error) {
+        console.error(error)
+        return res.send("Erro ao editar evento")
     }
 
     res.redirect("/admin")
